@@ -128,6 +128,12 @@ class Game {
         this.canvas.width = window.innerWidth; // set game screen width
         this.canvas.height = this.topbar.active ? window.innerHeight - this.topbar.clientHeight : window.innerHeight; // set game screen height
 
+        // reset score and points
+        this.setState({
+            score: 0,
+            lives: this.config.settings.lives
+        })
+
         // set screen
         this.screen = {
             top: 0,
@@ -306,6 +312,64 @@ class Game {
         this.requestFrame(() => this.play());
     }
 
+    // handle whacks
+    handleWhacks() {
+        // increment score
+        let score = mole.whacked + 10;
+        this.setState({ score: this.state.score + score });
+
+        // make score reaction
+        let scoreReaction = new Reaction({
+            ctx: this.ctx,
+            text: `+${this.state.score}`,
+            x: randomBetween(this.screen.left, this.screen.right),
+            y: this.screen.bottom,
+            speed: 10,
+            font: this.fonts.gameFont,
+            fontSize: bounded(Math.random() * 90, 30, 90),
+            color: this.config.colors.pointColor
+        });
+
+        // extra celebration every 250 points
+        let extra = (this.state.score % 250) < 10 ? `+${Math.round(this.state.score/250) * 250}!` : ``;
+        let extraReaction = new Reaction({
+            ctx: this.ctx,
+            text: extra,
+            x: randomBetween(this.screen.left, this.screen.right),
+            y: this.screen.bottom,
+            speed: 4,
+            font: this.fonts.gameFont,
+            fontSize: 90,
+            color: this.config.colors.extraColor,
+            minAlpha: 0.50
+        });
+
+        // make mole reaction
+        let reactionList = Object.entries(this.config.reactions)
+        .map(reaction => reaction[1]);
+        let reactionIndex = parseInt(Math.random() * reactionList.length);
+        let reactionText = reactionList[reactionIndex];
+        let moleReaction = new Reaction({
+            ctx: this.ctx,
+            text: reactionText,
+            x: mole.x,
+            y: mole.y,
+            speed: 2,
+            font: this.fonts.gameFont,
+            fontSize: bounded(15 * mole.whacked, 30, 90),
+            color: this.config.colors.reactionColor,
+            minAlpha: 0.25
+        });
+
+        // add reactions
+        this.reactions = [
+            ...this.reactions,
+            moleReaction,
+            scoreReaction,
+            extraReaction
+        ]
+    }
+
     // event listeners
     handleClicks(target) {
         if (this.state.current === 'loading') { return; }
@@ -355,60 +419,7 @@ class Game {
             let whacked = mole.whack(tap);
 
             if (whacked) {
-                // increment score
-                let score = mole.whacked + 10;
-                this.setState({ score: this.state.score + score });
-
-                // make score reaction
-                let scoreReaction = new Reaction({
-                    ctx: this.ctx,
-                    text: `+${this.state.score}`,
-                    x: randomBetween(this.screen.left, this.screen.right),
-                    y: this.screen.bottom,
-                    speed: 10,
-                    font: this.fonts.gameFont,
-                    fontSize: bounded(Math.random() * 90, 30, 90),
-                    color: this.config.colors.pointColor
-                });
-
-                // extra celebration every 250 points
-                let extra = (this.state.score % 250) < 10 ? `+${Math.round(this.state.score/250) * 250}!` : ``;
-                let extraReaction = new Reaction({
-                    ctx: this.ctx,
-                    text: extra,
-                    x: randomBetween(this.screen.left, this.screen.right),
-                    y: this.screen.bottom,
-                    speed: 4,
-                    font: this.fonts.gameFont,
-                    fontSize: 90,
-                    color: this.config.colors.extraColor,
-                    minAlpha: 0.50
-                });
-
-                // make mole reaction
-                let reactionList = Object.entries(this.config.reactions)
-                .map(reaction => reaction[1]);
-                let reactionIndex = parseInt(Math.random() * reactionList.length);
-                let reactionText = reactionList[reactionIndex];
-                let moleReaction = new Reaction({
-                    ctx: this.ctx,
-                    text: reactionText,
-                    x: mole.x,
-                    y: mole.y,
-                    speed: 2,
-                    font: this.fonts.gameFont,
-                    fontSize: bounded(15 * mole.whacked, 30, 90),
-                    color: this.config.colors.reactionColor,
-                    minAlpha: 0.25
-                });
-
-                // add reactions
-                this.reactions = [
-                    ...this.reactions,
-                    moleReaction,
-                    scoreReaction,
-                    extraReaction
-                ]
+                this.handleWhacks();
             }
         });
     }
