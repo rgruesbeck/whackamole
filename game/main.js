@@ -57,6 +57,44 @@ class Game {
         this.canvas = canvas; // game screen
         this.ctx = canvas.getContext("2d"); // game screen context
 
+
+        // setup event listeners
+        // handle keyboard events
+        document.addEventListener('keydown', ({ code }) => this.handleKeyboardInput('keydown', code));
+        document.addEventListener('keyup', ({ code }) => this.handleKeyboardInput('keyup', code));
+
+        // handle taps
+        document.addEventListener('touchstart', ({ touches }) => this.handleTap(touches[0]));
+        document.addEventListener('mousedown', (e) => this.handleTap(e));
+
+        // handle overlay clicks
+        this.overlay.root.addEventListener('click', ({ target }) => this.handleClicks(target));
+
+        // handle resize events
+        window.addEventListener('resize', () => this.handleResize());
+        window.addEventListener("orientationchange", (e) => this.handleResize(e));
+        
+        // handle koji config changes
+        Koji.on('change', (scope, key, value) => {
+            console.log('updating configs...', scope, key, value);
+            this.config[scope][key] = value;
+            this.cancelFrame(this.frame.count - 1);
+            this.load();
+        });
+
+    }
+
+    init() {
+
+        // set topbar and topbar color
+        this.topbar.active = this.config.settings.gameTopBar;
+        this.topbar.style.display = this.topbar.active ? 'block' : 'none';
+        this.topbar.style.backgroundColor = this.config.colors.primaryColor;
+
+        // set canvas
+        this.canvas.width = window.innerWidth; // set game screen width
+        this.canvas.height = this.topbar.active ? window.innerHeight - this.topbar.clientHeight : window.innerHeight; // set game screen height
+
         // frame count, rate, and time
         // this is just a place to keep track of frame rate (not set it)
         this.frame = {
@@ -89,50 +127,6 @@ class Game {
 
         this.moles = [];
         this.reactions = [];
-
-        // setup event listeners
-        // handle keyboard events
-        document.addEventListener('keydown', ({ code }) => this.handleKeyboardInput('keydown', code));
-        document.addEventListener('keyup', ({ code }) => this.handleKeyboardInput('keyup', code));
-
-        // handle taps
-        document.addEventListener('touchstart', ({ touches }) => this.handleTap(touches[0]));
-        document.addEventListener('mousedown', (e) => this.handleTap(e));
-
-        // handle overlay clicks
-        this.overlay.root.addEventListener('click', ({ target }) => this.handleClicks(target));
-
-        // handle resize events
-        window.addEventListener('resize', () => this.handleResize());
-        window.addEventListener("orientationchange", (e) => this.handleResize(e));
-        
-        // handle koji config changes
-        Koji.on('change', (scope, key, value) => {
-            console.log('updating configs...', scope, key, value);
-            this.config[scope][key] = value;
-            this.cancelFrame(this.frame.count - 1);
-            this.load();
-        });
-
-    }
-
-    init() {
-        // set 
-
-        // set topbar and topbar color
-        this.topbar.active = this.config.settings.gameTopBar;
-        this.topbar.style.display = this.topbar.active ? 'block' : 'none';
-        this.topbar.style.backgroundColor = this.config.colors.primaryColor;
-
-        // set canvas
-        this.canvas.width = window.innerWidth; // set game screen width
-        this.canvas.height = this.topbar.active ? window.innerHeight - this.topbar.clientHeight : window.innerHeight; // set game screen height
-
-        // reset score and points
-        this.setState({
-            score: 0,
-            lives: this.config.settings.lives
-        })
 
         // set screen
         this.screen = {
@@ -306,6 +300,8 @@ class Game {
         // game over
         if (this.state.current === 'over') {
             this.overlay.setBanner(this.config.settings.gameoverText);
+
+            this.sounds.backgroundMusic.pause();
         }
 
         // draw the next screen
@@ -313,7 +309,7 @@ class Game {
     }
 
     // handle whacks
-    handleWhacks() {
+    handleWhacks(mole) {
         // increment score
         let score = mole.whacked + 10;
         this.setState({ score: this.state.score + score });
@@ -419,7 +415,7 @@ class Game {
             let whacked = mole.whack(tap);
 
             if (whacked) {
-                this.handleWhacks();
+                this.handleWhacks(mole);
             }
         });
     }
