@@ -38,6 +38,8 @@ import Mole from './characters/mole.js';
 import Reaction from './characters/reaction.js';
 
 import {
+    bounded,
+    randomBetween,
     getCursorPosition
 } from './helpers/utils.js';
 
@@ -69,6 +71,7 @@ class Game {
             current: 'loading',
             prev: '',
             score: 0,
+            lives: parseInt(this.config.settings.lives),
             paused: false,
             muted: localStorage.getItem('game-muted') === 'true'
         };
@@ -196,6 +199,10 @@ class Game {
         // no matter the game state
         this.ctx.drawImage(this.images.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
 
+        // update score and lives
+        this.overlay.setScore(this.state.score);
+        this.overlay.setLives(bounded(this.state.lives, 0, this.state.lives));
+
         // ready to play
         if (this.state.current === 'ready') {
             this.overlay.hide('loading');
@@ -215,7 +222,8 @@ class Game {
             this.overlay.setMute(this.state.muted);
             this.overlay.setPause(this.state.paused);
 
-            this.setState({ current: 'play' });
+            // uncomment during dev to skip start screen
+            // this.setState({ current: 'play' });
         }
 
         // game play
@@ -229,26 +237,39 @@ class Game {
 
             if (!this.state.muted) { this.sounds.backgroundMusic.play(); }
 
-            // spawn new moles every second if less than 5 moles on screen
-            // ccv: maxmoles
-            if (this.frame.count % 60 === 0 && this.moles.length < 5) {
+            // spawn new moles every second if less than max targets on screen
+            let maxTargets = this.config.settings.maxTargets;
+            if (this.frame.count % 60 === 0 && this.moles.length < maxTargets) {
                 // get new mole location
-                const location = pickLocationAwayFromList(this.screen, this.moles, this.moleWidth * 2);
+                const location = pickLocationAwayFromList(this.screen, this.moles, this.moleWidth * 2)
 
-                this.moles = [
-                    ...this.moles,
-                    new Mole({
-                        ctx: this.ctx,
-                        image: this.images.happyMole,
-                        angryImage: this.images.angryMole,
-                        x: location.x,
-                        y: location.y,
-                        width: this.moleWidth,
-                        height: this.moleHeight,
-                        speed: 50,
-                        bounds: this.screen
-                    })
-                ]
+                if (location) {
+                    this.moles = [
+                        ...this.moles,
+                        new Mole({
+                            ctx: this.ctx,
+                            image: this.images.happyMole,
+                            angryImage: this.images.angryMole,
+                            x: location.x,
+                            y: location.y,
+                            width: this.moleWidth,
+                            height: this.moleHeight,
+                            speed: 50,
+                            aggression: this.config.settings.aggressionLevel,
+                            bounds: this.screen
+                        })
+                    ]
+                }
+            }
+
+            // moles attack
+            // get attackers
+            let attackers = this.moles
+            .filter(mole => mole.width > this.canvas.width / 2);
+
+            // every 2 seconds there is an attacking mole in range, remove a life
+            if (this.frame.count % 60 === 0 && attackers.length > 0) {
+                this.setState({ lives: this.state.lives - attackers.length });
             }
 
             // draw moles
@@ -268,16 +289,17 @@ class Game {
                 ...this.reactions
                 .filter(reaction => reaction.y > 0)
             ];
-        }
 
-        // mole wins
-        if (this.state.current === 'win') {
+            // check for game over
+            if (this.state.lives < 1) {
+                this.setState({ current: 'over' });
+            }
 
         }
 
         // game over
         if (this.state.current === 'over') {
-
+            this.overlay.setBanner(this.config.settings.gameoverText);
         }
 
         // draw the next screen
@@ -321,6 +343,7 @@ class Game {
     }
 
     handleTap(touch) {
+        if (this.state.current === 'over') { this.load(); }
         if (this.state.current != 'play' || this.state.paused) { return; }
 
         let tap = getCursorPosition(this.canvas, touch);
@@ -332,21 +355,59 @@ class Game {
             let whacked = mole.whack(tap);
 
             if (whacked) {
+                // increment score
+                let score = mole.whacked + 10;
+                this.setState({ score: this.state.score + score });
+
+                // make score reaction
+                let scoreReaction = new Reaction({
+                    ctx: this.ctx,
+                    text: `+${this.state.score}`,
+                    x: randomBetween(this.screen.left, this.screen.right),
+                    y: this.screen.bottom,
+                    speed: 10,
+                    font: this.fonts.gameFont,
+                    fontSize: bounded(Math.random() * 90, 30, 90),
+                    color: this.config.colors.pointColor
+                });
+
+                // extra celebration every 250 points
+                let extra = (this.state.score % 250) < 10 ? `+${Math.round(this.state.score/250) * 250}!` : ``;
+                let extraReaction = new Reaction({
+                    ctx: this.ctx,
+                    text: extra,
+                    x: randomBetween(this.screen.left, this.screen.right),
+                    y: this.screen.bottom,
+                    speed: 4,
+                    font: this.fonts.gameFont,
+                    fontSize: 90,
+                    color: this.config.colors.extraColor,
+                    minAlpha: 0.50
+                });
+
+                // make mole reaction
                 let reactionList = Object.entries(this.config.reactions)
                 .map(reaction => reaction[1]);
                 let reactionIndex = parseInt(Math.random() * reactionList.length);
                 let reactionText = reactionList[reactionIndex];
+                let moleReaction = new Reaction({
+                    ctx: this.ctx,
+                    text: reactionText,
+                    x: mole.x,
+                    y: mole.y,
+                    speed: 2,
+                    font: this.fonts.gameFont,
+                    fontSize: bounded(15 * mole.whacked, 30, 90),
+                    color: this.config.colors.reactionColor,
+                    minAlpha: 0.25
+                });
 
+                // add reactions
                 this.reactions = [
                     ...this.reactions,
-                    new Reaction({
-                        ctx: this.ctx,
-                        text: reactionText,
-                        x: mole.x,
-                        y: mole.y,
-                        font: this.fonts.gameFont,
-                        color: this.config.colors.primaryColor
-                    })
+                    moleReaction,
+                    scoreReaction,
+                    extraReaction
                 ]
             }
         });

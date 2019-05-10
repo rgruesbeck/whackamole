@@ -35,7 +35,10 @@ const pickLocation = (bounds) => {
 
 // pick new location for moles so they aren't crowded
 // pick random location in bounds and distance from point
-const pickLocationAwayFrom = (bounds, point, distance) => {
+const pickLocationAwayFrom = (bounds, point, distance, depth = 0) => {
+    // limit to 10 trys
+    if (depth > 10) { return; }
+
     // get random point or screen
     const location = pickLocation(bounds);
     const locationDistance = getDistance(location, point); 
@@ -44,10 +47,13 @@ const pickLocationAwayFrom = (bounds, point, distance) => {
     // away from point, else try a new location
     return locationDistance >= distance ?
     location :
-    pickLocationAwayFrom(bounds, point, distance);
+    pickLocationAwayFrom(bounds, point, distance, depth + 1);
 }
 
-const pickLocationAwayFromList = (bounds, list, distance) => {
+const pickLocationAwayFromList = (bounds, list, distance, depth = 0) => {
+    // limit to 10 trys
+    if (depth > 10) { return; }
+
     // return any location if list is empty
     if (list.length < 1) {
         return pickLocation(bounds);
@@ -66,7 +72,7 @@ const pickLocationAwayFromList = (bounds, list, distance) => {
     // return location without close neighbors
     // else try new location
     return hasCloseNeighbor ?
-    pickLocationAwayFromList(bounds, list, distance) :
+    pickLocationAwayFromList(bounds, list, distance, depth + 1) :
     location;
 }
 

@@ -24,6 +24,7 @@ class Mole extends ImageSprite {
 
         this.angryImage = options.angryImage;
 
+        this.aggression = options.aggression;
         this.whacked = 0;
         this.mood = 'happy';
 
@@ -68,8 +69,8 @@ class Mole extends ImageSprite {
     draw(frame) {
 
         if (this.mood === 'angry') {
-            this.width += 3;
-            this.height += 3;
+            this.width += this.aggression;
+            this.height += this.aggression;
 
             // mole charge
             let dx = Math.cos(frame.count / this.chargeX) / 5;

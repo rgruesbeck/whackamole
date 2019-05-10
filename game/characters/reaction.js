@@ -13,7 +13,7 @@
 import { hexToRgbA } from '../helpers/utils.js';
 
 class Reaction {
-    constructor({ctx, text, x, y, font, color}) {
+    constructor({ctx, text, x, y, speed, font, fontSize, color, minAlpha}) {
         this.ctx = ctx;
 
         this.x = x;
@@ -22,18 +22,20 @@ class Reaction {
         this.ox = x;
         this.oy = y;
 
-        this.speed = Math.random() * 2 + 2;
+        this.speed = Math.random() * speed + speed;
 
         this.text = text;
 
         this.color = color;
-        this.font = `bold 30px ${font}`
+        this.font = `bold ${fontSize}px ${font}`
+
         this.alpha = 1;
+        this.minAlpha = minAlpha || 0;
     }
     
     draw() {
         this.y -= this.speed;
-        this.alpha = this.y / this.oy
+        this.alpha = (this.y / this.oy) + this.minAlpha;
 
         this.ctx.font = this.font;
         this.ctx.fillStyle = hexToRgbA(this.color, this.alpha);

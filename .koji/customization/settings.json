@@ -1,12 +1,14 @@
 {
     "settings": {
-      "name": "Game",
-      "startText": "Start",
+      "name": "Whack a Mole",
+      "startText": "Play",
       "gameoverText": "Game Over",
-      "instructionsMobile": "Swipe in direction character should move",
-      "instructionsDesktop": "Use arrow keys to move: [ ⇠ ⇢ ] [ ⇡ ⇣ ]",
+      "instructionsMobile": "Whack the moles <br> escape their wrath <br> [tap to whack]",
+      "instructionsDesktop": "Whack the moles <br> escape their wrath <br> [click to whack]",
       "gameTopBar": true,
-      "lives": 3,
+      "lives": 10,
+      "maxTargets": 10,
+      "aggressionLevel": 4,
       "fontFamily": "Bungee Inline"
     },
     "@@editor": [
@@ -44,6 +46,14 @@
           {
             "key": "lives",
             "name": "How many lives a character has"
+          },
+          {
+            "key": "maxTargets",
+            "name": "Max number of targets on screen"
+          },
+          {
+            "key": "aggressionLevel",
+            "name": "Target aggression level"
           },
           {
             "key": "fontFamily",
