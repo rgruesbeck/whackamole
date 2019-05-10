@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "title": "HTML5 Canvas Game Scaffold",
-    "description": "A scaffold for creating games with HTML5 Canvas on Koji. Easily customizable at gokoji.com.",
-    "image": "https://i.imgur.com/1VTl2r7.png",
-    "icon": "https://via.placeholder.com",
-    "icon192": "https://via.placeholder.com/192",
-    "icon512": "https://via.placeholder.com/512",
+    "title": "Whack a Mole",
+    "description": "Fun tapping game with angry moles. Easily customizable at gokoji.com.",
+    "image": "https://images.koji-cdn.com/template-assets/9fc1be8c-7978-4e3f-adb4-b208e7eaf134_1557525502775.png",
+    "icon": "https://images.koji-cdn.com/template-assets/9fc1be8c-7978-4e3f-adb4-b208e7eaf134_1557525502775.png",
+    "icon192": "https://images.koji-cdn.com/template-assets/9fc1be8c-7978-4e3f-adb4-b208e7eaf134_1557525502775.png?w=192",
+    "icon512": "https://images.koji-cdn.com/template-assets/9fc1be8c-7978-4e3f-adb4-b208e7eaf134_1557525502775.png?w=512"
     "gaCode": ""
   },
   "@@editor": [
