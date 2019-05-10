@@ -4,8 +4,7 @@
     "primaryColor": "#555CAF",
     "reactionColor": "#fecf73",
     "pointColor": "#F7EDF0",
-    "extraColor": "#FF9D96",
-    "backgroundColor": "white"
+    "extraColor": "#FF9D96"
   },
   "@@editor": [
     {
@@ -38,11 +37,6 @@
         {
           "key": "extraColor",
           "name": "Color for Extras",
-          "type": "color"
-        },
-        {
-          "key": "backgroundColor",
-          "name": "Background color",
           "type": "color"
         }
       ]

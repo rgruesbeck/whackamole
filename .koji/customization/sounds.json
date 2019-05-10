@@ -1,5 +1,8 @@
 {
     "sounds": {
+      "whackSound": "https://s3-us-west-2.amazonaws.com/koji-cdn/media/ron/game-music.mp3",
+      "extraSound": "https://s3-us-west-2.amazonaws.com/koji-cdn/media/ron/game-music.mp3",
+      "gameOverSound": "https://s3-us-west-2.amazonaws.com/koji-cdn/media/ron/game-music.mp3",
       "backgroundMusic": "https://s3-us-west-2.amazonaws.com/koji-cdn/media/ron/game-music.mp3"
     },
     "@@editor": [
@@ -9,6 +12,24 @@
         "icon": "🔊️",
         "source": "sounds.json",
         "fields": [
+          {
+            "key": "whackSound",
+            "name": "Whack Sound",
+            "description": "Sound when target is whacked",
+            "type": "sound"
+          },
+          {
+            "key": "extraSound",
+            "name": "Extra Sound",
+            "description": "Sound for special event",
+            "type": "sound"
+          },
+          {
+            "key": "gameOverSound",
+            "name": "Game Over Sound",
+            "description": "Sound for game is over",
+            "type": "sound"
+          },
           {
             "key": "backgroundMusic",
             "name": "Background Music",

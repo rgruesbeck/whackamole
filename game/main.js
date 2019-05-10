@@ -140,7 +140,7 @@ class Game {
         };
 
         // set document body to backgroundColor
-        document.body.style.backgroundColor = this.config.colors.backgroundColor;
+        document.body.style.backgroundColor = this.config.colors.primaryColor;
 
         // set loading indicator to textColor
         document.querySelector('#loading').style.color = this.config.colors.textColor;
@@ -192,7 +192,7 @@ class Game {
         // update game characters
 
         // clear the screen of the last picture
-        this.ctx.fillStyle = this.config.colors.backgroundColor; 
+        this.ctx.fillStyle = this.config.colors.primaryColor; 
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         // draw and do stuff that you need to do
