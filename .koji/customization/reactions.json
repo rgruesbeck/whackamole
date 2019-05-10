@@ -1,0 +1,34 @@
+{
+    "reactions": {
+      "one": "Rude!",
+      "two": "MY LAWN!",
+      "three": "@#*!",
+      "four": "Off!"
+    },
+    "@@editor": [
+      {
+        "key": "reactions",
+        "name": "Game reactions",
+        "icon": "🎮",
+        "source": "reactions.json",
+        "fields": [
+          {
+            "key": "one",
+            "name": "Reaction One"
+          },
+          {
+            "key": "two",
+            "name": "Reaction Two"
+          },
+          {
+            "key": "three",
+            "name": "Reaction Three"
+          },
+          {
+            "key": "four",
+            "name": "Reaction Four"
+          }
+        ]
+      }
+    ]
+  }

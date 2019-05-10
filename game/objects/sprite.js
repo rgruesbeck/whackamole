@@ -71,6 +71,9 @@ class Sprite {
 
         this.cx = this.x + (this.width/2); // set center x
         this.vx = this.x - this.px; // set velocity x
+
+        // update bounding box
+        this.setBox({ left: this.x, right: this.x + this.width });
     }
 
     setY(ny) {
@@ -82,16 +85,19 @@ class Sprite {
 
         this.cy = this.y + (this.height/2); // set center y
         this.vy = this.y - this.py; // set velocity y
+
+        // update bounding box
+        this.setBox({ top: this.y, bottom: this.y + this.height });
     }
 
-    setBounds({ top, right, bottom, left }) {
-        let bounds = {
-            top: top,
-            right: right,
-            bottom: bottom,
-            left: left
-        };
+    setBox(box) {
+        this.box = {
+            ...this.box,
+            ...box
+        }
+    }
 
+    setBounds(bounds) {
         this.bounds = {
             ...this.bounds,
             ...bounds

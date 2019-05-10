@@ -17,6 +17,25 @@
  * 
  */
 
+// get random number between min and max
+const randomBetween = (min, max, type) => {
+    const rand = Math.random() * (max - min) + min;
+
+    if (type && type === 'int') {
+        return parseInt(rand);
+    }
+
+    return rand;
+}
+
+// distance between two points
+const getDistance = (pointA, pointB) => {
+    let vx = pointA.x - pointB.x;
+    let vy = pointA.y - pointB.y;
+
+    return Math.sqrt(vx * vx + vy * vy);
+}
+
 // create throttled function
 // checkout: https://outline.com/nBajAS
 const throttled = (delay, fn) => {
@@ -39,4 +58,40 @@ const bounded = (n, min, max) => {
     .reduce(n => n);
 }
 
-export { throttled, bounded };
+// check if n is within bounds
+const isBounded = (n, min, max) => {
+    return n > min && n < max;
+}
+
+// get cursor event position (tap, click, etc)
+// needed for canvas click while top bar active
+const getCursorPosition = (canvas, event) => {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+    }
+}
+
+// color converter
+const hexToRgbA = (hex, opacity) => {
+    let h=hex.replace('#', '');
+    h =  h.match(new RegExp('(.{'+h.length/3+'})', 'g'));
+
+    for(let i=0; i<h.length; i++)
+        h[i] = parseInt(h[i].length==1? h[i]+h[i]:h[i], 16);
+
+    if (typeof opacity != 'undefined')  h.push(opacity);
+
+    return 'rgba('+h.join(',')+')';
+}
+
+export {
+    randomBetween,
+    getDistance,
+    throttled,
+    bounded,
+    isBounded,
+    getCursorPosition,
+    hexToRgbA
+};

@@ -1,7 +1,8 @@
 {
   "images": {
-    "playerImage": "https://i.imgur.com/FJEfD6a.png",
-    "backgroundImage": "https://i.imgur.com/Aqoh8DO.png"
+    "happyMole": "https://i.imgur.com/tejeMhR.png",
+    "angryMole": "https://i.imgur.com/Upj2Blp.png",
+    "backgroundImage": "https://i.imgur.com/2MxAkFs.png"
   },
   "@@editor": [
     {
@@ -11,9 +12,15 @@
       "source": "images.json",
       "fields": [
         {
-          "key": "playerImage",
-          "name": "Player Image",
-          "description": "Player image",
+          "key": "happyMole",
+          "name": "Happy Mole Image",
+          "description": "Image for happy mole",
+          "type": "image"
+        },
+        {
+          "key": "angryMole",
+          "name": "Angry Mole Image",
+          "description": "Image for angry mole",
           "type": "image"
         },
         {

@@ -34,7 +34,16 @@ import {
     loadFont
 } from './helpers/loaders.js';
 
-import Player from './characters/player.js';
+import Mole from './characters/mole.js';
+import Reaction from './characters/reaction.js';
+
+import {
+    getCursorPosition
+} from './helpers/utils.js';
+
+import {
+    pickLocationAwayFromList
+} from './helpers/sprite.js';
 
 class Game {
 
@@ -75,18 +84,17 @@ class Game {
         this.sounds = {}; // place to keep sounds
         this.fonts = {}; // place to keep fonts
 
-        this.player = {};
+        this.moles = [];
+        this.reactions = [];
 
         // setup event listeners
         // handle keyboard events
         document.addEventListener('keydown', ({ code }) => this.handleKeyboardInput('keydown', code));
         document.addEventListener('keyup', ({ code }) => this.handleKeyboardInput('keyup', code));
 
-        // setup event listeners for mouse movement
-        document.addEventListener('mousemove', ({ clientY }) => this.handleMouseMove(clientY));
-
-        // setup event listeners for mouse movement
-        document.addEventListener('touchmove', ({ touches }) => this.handleTouchMove(touches[0]));
+        // handle taps
+        document.addEventListener('touchstart', ({ touches }) => this.handleTap(touches[0]));
+        document.addEventListener('mousedown', (e) => this.handleTap(e));
 
         // handle overlay clicks
         this.overlay.root.addEventListener('click', ({ target }) => this.handleClicks(target));
@@ -143,7 +151,8 @@ class Game {
         
         // make a list of assets
         const gameAssets = [
-            loadImage('playerImage', this.config.images.playerImage),
+            loadImage('happyMole', this.config.images.happyMole),
+            loadImage('angryMole', this.config.images.angryMole),
             loadImage('backgroundImage', this.config.images.backgroundImage),
             loadSound('backgroundMusic', this.config.sounds.backgroundMusic),
             loadFont('gameFont', this.config.settings.fontFamily)
@@ -164,22 +173,10 @@ class Game {
         // create game characters
 
         const { scale, centerX, centerY } = this.screen;
-        const { playerImage } = this.images;
+        const { happyMole } = this.images;
 
-
-        let playerHeight = 60 * scale;
-        let playerWidth = 70 * scale;
-
-        this.player = new Player({
-            ctx: this.ctx,
-            image: playerImage,
-            x: centerX - playerWidth / 4,
-            y: centerY,
-            width: playerWidth,
-            height: playerHeight,
-            speed: 50,
-            bounds: this.screen
-        });
+        this.moleHeight = 50 * scale;
+        this.moleWidth = 60 * scale;
 
         // set overlay styles
         this.overlay.setStyles({...this.config.colors, ...this.config.settings});
@@ -218,6 +215,7 @@ class Game {
             this.overlay.setMute(this.state.muted);
             this.overlay.setPause(this.state.paused);
 
+            this.setState({ current: 'play' });
         }
 
         // game play
@@ -231,33 +229,48 @@ class Game {
 
             if (!this.state.muted) { this.sounds.backgroundMusic.play(); }
 
-            // player bounce
-            let ddy = Math.cos(this.frame.count / 5) / 20;
+            // spawn new moles every second if less than 5 moles on screen
+            // ccv: maxmoles
+            if (this.frame.count % 60 === 0 && this.moles.length < 5) {
+                // get new mole location
+                const location = pickLocationAwayFromList(this.screen, this.moles, this.moleWidth * 2);
 
-            // move player with keyboard
-            if (this.input.active === 'keyboard') {
-                let { up, right, down, left } = this.input.keyboard;
-
-                let dx = (left ? -1 : 0) + (right ? 1 : 0);
-                let dy = (up ? -1 : 0) + (down ? 1 : 0);
-
-                this.player.move(dx, dy + ddy, this.frame.scale);
+                this.moles = [
+                    ...this.moles,
+                    new Mole({
+                        ctx: this.ctx,
+                        image: this.images.happyMole,
+                        angryImage: this.images.angryMole,
+                        x: location.x,
+                        y: location.y,
+                        width: this.moleWidth,
+                        height: this.moleHeight,
+                        speed: 50,
+                        bounds: this.screen
+                    })
+                ]
             }
 
-            if (this.input.active === 'touch') {
-                let { x, y } = this.input.touch;
-                let { cx, cy } = this.player;
+            // draw moles
+            this.moles.forEach(mole => mole.draw(this.frame));
 
-                let dx = (x - cx) / (x * 2);
-                let dy = (y - cy) / (y * 2);
+            // filter moles
+            this.moles = [
+                ...this.moles
+                .filter(moles => moles.mood != 'done')
+            ];
 
-                this.player.move(dx, dy + ddy, this.frame.scale);
-            }
+            // draw reactions
+            this.reactions.forEach(reaction => reaction.draw());
 
-            this.player.draw();
+            // filter reactions
+            this.reactions = [
+                ...this.reactions
+                .filter(reaction => reaction.y > 0)
+            ];
         }
 
-        // player wins
+        // mole wins
         if (this.state.current === 'win') {
 
         }
@@ -299,35 +312,7 @@ class Game {
     handleKeyboardInput(type, code) {
         this.input.active = 'keyboard';
 
-        if (type === 'keydown') {
-            if (code === 'ArrowUp') {
-                this.input.keyboard.up = true
-            }
-            if (code === 'ArrowRight') {
-                this.input.keyboard.right = true
-            }
-            if (code === 'ArrowDown') {
-                this.input.keyboard.down = true
-            }
-            if (code === 'ArrowLeft') {
-                this.input.keyboard.left = true
-            }
-        }
-
         if (type === 'keyup') {
-            if (code === 'ArrowUp') {
-                this.input.keyboard.up = false
-            }
-            if (code === 'ArrowRight') {
-                this.input.keyboard.right = false
-            }
-            if (code === 'ArrowDown') {
-                this.input.keyboard.down = false
-            }
-            if (code === 'ArrowLeft') {
-                this.input.keyboard.left = false
-            }
-
             // spacebar: pause and play game
             if (code === 'Space') {
                 this.pause();
@@ -335,17 +320,36 @@ class Game {
         }
     }
 
-    handleMouseMove(y) {
-        this.input.active = 'mouse';
-        this.input.mouse.y = y;
-    }
+    handleTap(touch) {
+        if (this.state.current != 'play' || this.state.paused) { return; }
 
-    handleTouchMove(touch) {
-        let { clientX, clientY } = touch;
+        let tap = getCursorPosition(this.canvas, touch);
 
-        this.input.active = 'touch';
-        this.input.touch.x = clientX;
-        this.input.touch.y = clientY;
+        // send tap to moles
+        this.moles.forEach(mole => {
+            // send whack to mole
+            // if whacked, add a reaction
+            let whacked = mole.whack(tap);
+
+            if (whacked) {
+                let reactionList = Object.entries(this.config.reactions)
+                .map(reaction => reaction[1]);
+                let reactionIndex = parseInt(Math.random() * reactionList.length);
+                let reactionText = reactionList[reactionIndex];
+
+                this.reactions = [
+                    ...this.reactions,
+                    new Reaction({
+                        ctx: this.ctx,
+                        text: reactionText,
+                        x: mole.x,
+                        y: mole.y,
+                        font: this.fonts.gameFont,
+                        color: this.config.colors.primaryColor
+                    })
+                ]
+            }
+        });
     }
 
     handleResize() {
