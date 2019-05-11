@@ -1,6 +1,7 @@
-# HTML5 Canvas Game Scaffold
+# Whack a Mole
 ![Game Artwork](https://i.imgur.com/jcBe9Ef.png)
 
+Fun tapping game with angry moles. Based off the based off the HTML5 Canvas Game Scaffold.
 A perfect beginner template for new game makers. Jump right into the "index.js" file and begin editing your game settings.
 
 ## Features: 
@@ -12,13 +13,18 @@ A perfect beginner template for new game makers. Jump right into the "index.js" 
 ## Visual Customizations Controls (VCC's) include:
 ### Colors
   * Text Color
+  * Reaction Color
+  * Score Color
   * Primary Color
-  * Background Color
   * Font family
 ### Game Settings
   * Start Button Text
   * Number of Lives
+### Game Settings
+  * Reaction Text
 ### Images
+  * Happy Target Image
+  * Angry Target Image
   * Background Image
 ### Metadata
   * App Name
@@ -27,6 +33,10 @@ A perfect beginner template for new game makers. Jump right into the "index.js" 
   * Share Image
   * Icon
 ### Sounds
+  * Whack Sound
+  * Score Sound
+  * Attack Sound
+  * Game Over Sound
   * Background Music
 ## Possibilities for Extension
 1. Levels
