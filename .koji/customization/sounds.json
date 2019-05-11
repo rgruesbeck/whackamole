@@ -1,42 +1,56 @@
 {
-    "sounds": {
-      "whackSound": "https://s3-us-west-2.amazonaws.com/koji-cdn/media/ron/game-music.mp3",
-      "extraSound": "https://s3-us-west-2.amazonaws.com/koji-cdn/media/ron/game-music.mp3",
-      "gameOverSound": "https://s3-us-west-2.amazonaws.com/koji-cdn/media/ron/game-music.mp3",
-      "backgroundMusic": "https://s3-us-west-2.amazonaws.com/koji-cdn/media/ron/game-music.mp3"
-    },
-    "@@editor": [
-      {
-        "key": "sounds",
-        "name": "Sounds",
-        "icon": "🔊️",
-        "source": "sounds.json",
-        "fields": [
-          {
-            "key": "whackSound",
-            "name": "Whack Sound",
-            "description": "Sound when target is whacked",
-            "type": "sound"
-          },
-          {
-            "key": "extraSound",
-            "name": "Extra Sound",
-            "description": "Sound for special event",
-            "type": "sound"
-          },
-          {
-            "key": "gameOverSound",
-            "name": "Game Over Sound",
-            "description": "Sound for game is over",
-            "type": "sound"
-          },
-          {
-            "key": "backgroundMusic",
-            "name": "Background Music",
-            "description": "Music to loop in background",
-            "type": "sound"
-          }
-        ]
-      }
-    ]
-  }
+  "sounds": {
+    "whackSound": "https://objects.koji-cdn.com/859f5f64-05a6-4337-9fab-cbce96d74caf/mole-hit.mp3",
+    "scoreSound": "https://objects.koji-cdn.com/509732fa-8e49-42dc-bdaa-5bba44ff75ca/coin.mp3",
+    "extraSound": "https://objects.koji-cdn.com/859f5f64-05a6-4337-9fab-cbce96d74caf/mole-extra.mp3",
+    "attackSound": "https://objects.koji-cdn.com/859f5f64-05a6-4337-9fab-cbce96d74caf/mole-attack.mp3",
+    "gameOverSound": "https://objects.koji-cdn.com/859f5f64-05a6-4337-9fab-cbce96d74caf/mole-over.mp3",
+    "backgroundMusic": "https://objects.koji-cdn.com/859f5f64-05a6-4337-9fab-cbce96d74caf/mole-background-calm.mp3"
+  },
+  "@@editor": [
+    {
+      "key": "sounds",
+      "name": "Sounds",
+      "icon": "🔊️",
+      "source": "sounds.json",
+      "fields": [
+        {
+          "key": "whackSound",
+          "name": "Whack Sound",
+          "description": "Sound when target is whacked",
+          "type": "sound"
+        },
+        {
+          "key": "scoreSound",
+          "name": "Score Sound",
+          "description": "Sounds when player scores a point",
+          "type": "sound"
+        },
+        {
+          "key": "extraSound",
+          "name": "Extra Sound",
+          "description": "Sound for special event",
+          "type": "sound"
+        },
+        {
+          "key": "attackSound",
+          "name": "Attack Sound",
+          "description": "Sound when target attacks",
+          "type": "sound"
+        },
+        {
+          "key": "gameOverSound",
+          "name": "Game Over Sound",
+          "description": "Sound for game is over",
+          "type": "sound"
+        },
+        {
+          "key": "backgroundMusic",
+          "name": "Background Music",
+          "description": "Music to loop in background",
+          "type": "sound"
+        }
+      ]
+    }
+  ]
+}

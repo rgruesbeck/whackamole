@@ -7,8 +7,8 @@
       "instructionsDesktop": "Whack the moles <br> escape their wrath <br> [click to whack]",
       "gameTopBar": true,
       "lives": 10,
-      "maxTargets": 10,
-      "aggressionLevel": 4,
+      "maxTargets": 5,
+      "aggressionLevel": 5,
       "fontFamily": "Bungee Inline"
     },
     "@@editor": [

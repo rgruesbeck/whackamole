@@ -157,6 +157,11 @@ class Game {
             loadImage('happyMole', this.config.images.happyMole),
             loadImage('angryMole', this.config.images.angryMole),
             loadImage('backgroundImage', this.config.images.backgroundImage),
+            loadSound('whackSound', this.config.sounds.whackSound),
+            loadSound('scoreSound', this.config.sounds.scoreSound),
+            loadSound('extraSound', this.config.sounds.extraSound),
+            loadSound('attackSound', this.config.sounds.attackSound),
+            loadSound('gameOverSound', this.config.sounds.gameOverSound),
             loadSound('backgroundMusic', this.config.sounds.backgroundMusic),
             loadFont('gameFont', this.config.settings.fontFamily)
         ];
@@ -268,17 +273,31 @@ class Game {
             .filter(mole => mole.width > this.canvas.width / 2);
 
             // every 2 seconds there is an attacking mole in range, remove a life
-            if (this.frame.count % 60 === 0 && attackers.length > 0) {
+            if (this.frame.count % 120 === 0 && attackers.length > 0) {
+
+                // remove life
                 this.setState({ lives: this.state.lives - attackers.length });
+            }
+
+            // attackers, play attack sound
+            if (attackers.length > 0) {
+
+                //play attack sound
+                this.sounds.attackSound.play();
+            } else {
+
+                //pause attack sound
+                this.sounds.attackSound.pause();
             }
 
             // draw moles
             this.moles.forEach(mole => mole.draw(this.frame));
 
-            // filter moles
+            // filter moles and sort by width
             this.moles = [
                 ...this.moles
                 .filter(moles => moles.mood != 'done')
+                .sort((a, b) => a.width - b.width)
             ];
 
             // draw reactions
@@ -302,6 +321,11 @@ class Game {
             this.overlay.setBanner(this.config.settings.gameoverText);
 
             this.sounds.backgroundMusic.pause();
+            this.sounds.attackSound.pause();
+
+            this.sounds.gameOverSound.play();
+
+            cancelFrame(this.frame.count - 1);
         }
 
         // draw the next screen
@@ -310,9 +334,14 @@ class Game {
 
     // handle whacks
     handleWhacks(mole) {
-        // increment score
+        // increment score and play score sound
         let score = mole.whacked + 10;
         this.setState({ score: this.state.score + score });
+        this.sounds.scoreSound.play();
+
+        // play whack sound
+        this.sounds.whackSound.currentTime = 0;
+        this.sounds.whackSound.play();
 
         // make score reaction
         let scoreReaction = new Reaction({
@@ -327,7 +356,15 @@ class Game {
         });
 
         // extra celebration every 250 points
-        let extra = (this.state.score % 250) < 10 ? `+${Math.round(this.state.score/250) * 250}!` : ``;
+        let isExtra = this.state.score % 250 < 10;
+
+        // play extra sound
+        if (isExtra) {
+            this.sounds.extraSound.play();
+        }
+
+        // get extra text
+        let extra = isExtra ? `+${Math.round(this.state.score/250) * 250}!` : ``;
         let extraReaction = new Reaction({
             ctx: this.ctx,
             text: extra,
