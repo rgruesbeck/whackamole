@@ -173,8 +173,7 @@ class Game {
             this.images = assets.image;
             this.sounds = assets.sound;
 
-        })
-        .then(() => this.create());
+        }).then(() => this.create());
     }
 
     create() {
