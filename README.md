@@ -1,13 +1,15 @@
 # Whack a Mole
 
-A perfect template for new game makers.
+The classic batting game.
 
 # VCC's
 
 - 🎮 Change the text and game settings
     * [Open configuration](#~/.koji/customization/settings.json!visual)
-- 🖼️ Replace the player, background and more
+- 🖼️ Replace the moles, background and more
     * [Open configuration](#~/.koji/customization/images.json!visual)
+- ⁉ Change and add custom reaction text
+    * [Open configuration](#~/.koji/customization/reactions.json!visual)
 - 🔈 Change the sounds and background music.
     * [Open configuration](#~/.koji/customization/sounds.json!visual)
 - 💅 Change the colors and visual style
@@ -29,7 +31,8 @@ This directory contains the main game code.
 
 ### ~/game/characters
 This directory contains code for the game characters.
-- [Player: game/characters/player.js](#~/game/characters/player.js) an example game character.
+- [Mole: game/characters/mole.js](#~/game/characters/mole.js) code for the mole game character.
+- [Reaction: game/characters/reaction.js](#~/game/characters/reaction.js) code for the mole reactions.
 
 ### ~/game/objects
 This directory contains code base classes like image, sprite, etc.
