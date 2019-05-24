@@ -242,7 +242,7 @@ class Game {
             if (!this.state.muted) { this.sounds.backgroundMusic.play(); }
 
             // spawn new moles every second if less than max targets on screen
-            let maxTargets = this.config.settings.maxTargets;
+            let maxTargets = parseInt(this.config.settings.maxTargets);
             if (this.frame.count % 60 === 0 && this.moles.length < maxTargets) {
                 // get new mole location
                 const location = pickLocationAwayFromList(this.screen, this.moles, this.moleWidth * 2)
@@ -259,7 +259,7 @@ class Game {
                             width: this.moleWidth,
                             height: this.moleHeight,
                             speed: 50,
-                            aggression: this.config.settings.aggressionLevel,
+                            aggression: parseInt(this.config.settings.aggressionLevel),
                             bounds: this.screen
                         })
                     ]
