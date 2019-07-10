@@ -32,12 +32,14 @@ import {
     loadImage,
     loadSound,
     loadFont
-} from './helpers/loaders.js';
+} from 'game-asset-loader';
 
-import Mole from './characters/mole.js';
-import Reaction from './characters/reaction.js';
+import audioContext from 'audio-context';
+import audioPlayback from 'audio-play';
+import unlockAudioContext from 'unlock-audio-context';
 
 import {
+    hashCode,
     bounded,
     randomBetween,
     getCursorPosition
@@ -47,6 +49,9 @@ import {
     pickLocationAwayFromList
 } from './helpers/sprite.js';
 
+import Mole from './characters/mole.js';
+import Reaction from './characters/reaction.js';
+
 class Game {
 
     constructor(canvas, overlay, topbar, config) {
@@ -54,9 +59,13 @@ class Game {
         this.overlay = overlay;
         this.topbar = topbar;
 
+        this.prefix = hashCode(this.config.settings.name); // set prefix for local-storage keys
+
         this.canvas = canvas; // game screen
         this.ctx = canvas.getContext("2d"); // game screen context
 
+        this.audioCtx = audioContext(); // create new audio context
+        this.playlist = [];
 
         // setup event listeners
         // handle keyboard events
@@ -82,6 +91,8 @@ class Game {
             this.load();
         });
 
+
+        unlockAudioContext(this.audioCtx);
     }
 
     init() {
@@ -167,13 +178,16 @@ class Game {
         ];
 
         // put the loaded assets the respective containers
-        loadList(gameAssets)
+        loadList(gameAssets, (progress) => {
+            this.overlay.setProgress(progress);
+        })
         .then((assets) => {
 
             this.images = assets.image;
             this.sounds = assets.sound;
-
-        }).then(() => this.create());
+        })
+        .then(() => this.create())
+        .catch((err) => console.error(err))
     }
 
     create() {
@@ -239,7 +253,15 @@ class Game {
                 this.overlay.hide(['banner', 'button', 'instructions'])
             }
 
-            if (!this.state.muted) { this.sounds.backgroundMusic.play(); }
+            if (!this.state.muted && !this.state.backgroundMusic) {
+                let sound = this.sounds.backgroundMusic;
+                this.state.backgroundMusic = audioPlayback(sound, {
+                    start: 0,
+                    end: sound.duration,
+                    loop: true,
+                    context: this.audioCtx
+                });
+            }
 
             // spawn new moles every second if less than max targets on screen
             let maxTargets = parseInt(this.config.settings.maxTargets);
@@ -274,19 +296,16 @@ class Game {
             // every 2 seconds there is an attacking mole in range, remove a life
             if (this.frame.count % 120 === 0 && attackers.length > 0) {
 
+                // play attack sound
+                this.playback('attackSound', this.sounds.attackSound);
+
                 // remove life
                 this.setState({ lives: this.state.lives - attackers.length });
             }
 
-            // attackers, play attack sound
-            if (attackers.length > 0) {
-
-                //play attack sound
-                this.sounds.attackSound.play();
-            } else {
-
-                //pause attack sound
-                this.sounds.attackSound.pause();
+            if (attackers.length === 0) {
+                // stop attack sound
+                this.stoPlayback('attackSound');
             }
 
             // draw moles
@@ -322,7 +341,12 @@ class Game {
             this.sounds.backgroundMusic.pause();
             this.sounds.attackSound.pause();
 
-            this.sounds.gameOverSound.play();
+            let sound = this.sounds.gameOverSound;
+            this.playback = audioPlayback(this, {
+                start: 0,
+                end: this.duration,
+                context: audioCtx
+            });
 
             cancelFrame(this.frame.count - 1);
         }
@@ -336,11 +360,10 @@ class Game {
         // increment score and play score sound
         let score = mole.whacked + 10;
         this.setState({ score: this.state.score + score });
-        this.sounds.scoreSound.play();
+        this.playback('scoreSound', this.sounds.scoreSound);
 
         // play whack sound
-        this.sounds.whackSound.currentTime = 0;
-        this.sounds.whackSound.play();
+        this.playback('whackSound', this.sounds.whackSound);
 
         // make score reaction
         let scoreReaction = new Reaction({
@@ -359,7 +382,7 @@ class Game {
 
         // play extra sound
         if (isExtra) {
-            this.sounds.extraSound.play();
+            this.playback('extraSound', this.sounds.extraSound);
         }
 
         // get extra text
@@ -474,10 +497,7 @@ class Game {
             this.cancelFrame(this.frame.count - 1);
 
             // mute all game sounds
-            Object.keys(this.sounds).forEach((key) => {
-                this.sounds[key].muted = true;
-                this.sounds[key].pause();
-            });
+            this.audioCtx.suspend();
 
             this.overlay.setBanner('Paused');
         } else {
@@ -486,10 +506,7 @@ class Game {
 
             // resume game sounds if game not muted
             if (!this.state.muted) {
-                Object.keys(this.sounds).forEach((key) => {
-                    this.sounds[key].muted = false;
-                    this.sounds.backgroundMusic.play();
-                });
+                this.audioCtx.resume();
             }
 
             this.overlay.hide('banner');
@@ -498,7 +515,7 @@ class Game {
 
     // mute game
     mute() {
-        let key = 'game-muted';
+        let key = this.prefix.concat('muted');
         localStorage.setItem(
             key,
             localStorage.getItem(key) === 'true' ? 'false' : 'true'
@@ -509,19 +526,11 @@ class Game {
 
         if (this.state.muted) {
             // mute all game sounds
-            Object.keys(this.sounds).forEach((key) => {
-                this.sounds[key].muted = true;
-                this.sounds[key].pause();
-            });
+            this.audioCtx.suspend();
         } else {
             // unmute all game sounds
-            // and play background music
-            // if game not paused
             if (!this.state.paused) {
-                Object.keys(this.sounds).forEach((key) => {
-                    this.sounds[key].muted = false;
-                    this.sounds.backgroundMusic.play();
-                });
+                this.audioCtx.resume();
             }
         }
     }
@@ -529,6 +538,38 @@ class Game {
     // reset game
     reset() {
         document.location.reload();
+    }
+
+    playback(key, audioBuffer, options = {}) {
+        // add to playlist
+        let id = Math.random().toString(16).slice(2);
+        this.playlist.push({
+            id: id,
+            key: key,
+            playback: audioPlayback(audioBuffer, {
+                ...{
+                    start: 0,
+                    end: audioBuffer.duration,
+                    context: this.audioCtx
+                },
+                ...options
+            }, () => {
+                // remove played sound from playlist
+                this.playlist = this.playlist
+                    .filter(s => s.id != id);
+            })
+        });
+    }
+
+    stoPlayback(key) {
+        this.playlist = this.playlist
+        .filter(s => {
+            let targetBuffer = s.key === key;
+            if (targetBuffer) {
+                s.playback.pause();
+            }
+            return targetBuffer;
+        })
     }
 
     // update game state

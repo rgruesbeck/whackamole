@@ -29,6 +29,7 @@ class Overlay {
         this.container = node.querySelector('.container');
 
         this.loading = node.querySelector('#loading');
+        this.loadingProgress = node.querySelector('#loading-progress');
         this.banner = node.querySelector('#banner');
         this.button = node.querySelector('#button');
         this.instructions = node.querySelector('#instructions');
@@ -39,6 +40,10 @@ class Overlay {
         this.pause = node.querySelector('#pause');
 
         this.styles = {};
+    }
+
+    setProgress(progress) {
+        this.loadingProgress.textContent = `${progress.percent}%`;
     }
 
     setBanner(message) {
