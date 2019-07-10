@@ -41,7 +41,6 @@ This directory contains code base classes like image, sprite, etc.
 
 ### ~/game/helpers
 This directory contains helper code for loading assets and and requesting frames.
-- [assetLoaders: game/helpers/assetLoaders.js](#~/game/helpers/assetLoaders.js) a collections of functions to help load image, sound, and font assets.
 - [animationFrame: game/helpers/sprite.js](#~/game/helpers/animationFrame.js) a shim for requestAnimationFrame, the browsers method for asking for a new frame. Browsers request around 60 frames per second depending on resources.
 - [utils: game/helpers/utils.js](#~/game/helpers/utils.js) a collection of useful functions for making games.
 
