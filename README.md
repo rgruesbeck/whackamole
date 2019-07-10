@@ -40,7 +40,7 @@ This directory contains code base classes like image, sprite, etc.
 - [Sprite: game/objects/sprite.js](#~/game/objects/sprite.js) a sprite class building game characters with. Being a sprite, gives a character abilities like movement in the x and y direction, speed, and bounding areas.
 
 ### ~/game/helpers
-This directory contains helper code for loading assets and and requesting frames.
+This directory contains helper code for utilities and requesting frames.
 - [animationFrame: game/helpers/sprite.js](#~/game/helpers/animationFrame.js) a shim for requestAnimationFrame, the browsers method for asking for a new frame. Browsers request around 60 frames per second depending on resources.
 - [utils: game/helpers/utils.js](#~/game/helpers/utils.js) a collection of useful functions for making games.
 
