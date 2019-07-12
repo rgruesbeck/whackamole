@@ -222,7 +222,7 @@ class Game {
         this.overlay.setLives(bounded(this.state.lives, 0, this.state.lives));
 
         // ready to play
-        if (this.state.current === 'ready') {
+        if (this.state.current === 'ready' && this.state.prev === 'loading') {
             this.overlay.hide('loading');
             this.canvas.style.opacity = 1;
 
@@ -240,8 +240,7 @@ class Game {
             this.overlay.setMute(this.state.muted);
             this.overlay.setPause(this.state.paused);
 
-            // uncomment during dev to skip start screen
-            // this.setState({ current: 'play' });
+            this.setState({ current: 'ready' });
         }
 
         // game play
@@ -305,7 +304,7 @@ class Game {
 
             if (attackers.length === 0) {
                 // stop attack sound
-                this.stoPlayback('attackSound');
+                this.stopPlayback('attackSound');
             }
 
             // draw moles
@@ -338,17 +337,11 @@ class Game {
         if (this.state.current === 'over') {
             this.overlay.setBanner(this.config.settings.gameoverText);
 
-            this.sounds.backgroundMusic.pause();
-            this.sounds.attackSound.pause();
+            this.state.backgroundMusic.pause();
+	    this.stopPlayback('attackSound');
+	    this.playback('gameOverSound', this.sounds.gameOverSound);
 
-            let sound = this.sounds.gameOverSound;
-            this.playback = audioPlayback(this, {
-                start: 0,
-                end: this.duration,
-                context: audioCtx
-            });
-
-            cancelFrame(this.frame.count - 1);
+            this.cancelFrame(this.frame.count - 1);
         }
 
         // draw the next screen
@@ -561,7 +554,7 @@ class Game {
         });
     }
 
-    stoPlayback(key) {
+    stopPlayback(key) {
         this.playlist = this.playlist
         .filter(s => {
             let targetBuffer = s.key === key;
