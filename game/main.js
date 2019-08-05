@@ -185,6 +185,7 @@ class Game {
 
             this.images = assets.image;
             this.sounds = assets.sound;
+            this.fonts = assets.font;
         })
         .then(() => this.create())
         .catch((err) => console.error(err))

@@ -13,7 +13,7 @@
 import { hexToRgbA } from '../helpers/utils.js';
 
 class Reaction {
-    constructor({ctx, text, x, y, speed, font, fontSize, color, minAlpha}) {
+    constructor({ctx, text, x, y, speed, font = 'Arial', fontSize, color, minAlpha}) {
         this.ctx = ctx;
 
         this.x = x;
