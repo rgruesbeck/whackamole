@@ -122,7 +122,7 @@ class Game {
             score: 0,
             lives: parseInt(this.config.settings.lives),
             paused: false,
-            muted: localStorage.getItem('game-muted') === 'true'
+            muted: localStorage.getItem(`${this.prefix}-muted`) === 'true'
         };
 
         this.input = {
@@ -209,6 +209,9 @@ class Game {
 
     play() {
         // update game characters
+        if (this.state.current === 'stop') {
+            this.cancelFrame();
+        }
 
         // clear the screen of the last picture
         this.ctx.fillStyle = this.config.colors.primaryColor; 
@@ -253,11 +256,12 @@ class Game {
                 this.overlay.hide(['banner', 'button', 'instructions'])
             }
 
+            // background music
             if (!this.state.muted && !this.state.backgroundMusic) {
-                let sound = this.sounds.backgroundMusic;
-                this.state.backgroundMusic = audioPlayback(sound, {
+                this.state.backgroundMusic = true;
+                this.playback('backgroundMusic', this.sounds.backgroundMusic, {
                     start: 0,
-                    end: sound.duration,
+                    end: this.sounds.backgroundMusic.duration,
                     loop: true,
                     context: this.audioCtx
                 });
@@ -335,14 +339,16 @@ class Game {
         }
 
         // game over
-        if (this.state.current === 'over') {
+        if (this.state.current === 'over' && this.state.prev === 'play') {
             this.overlay.setBanner(this.config.settings.gameoverText);
+            this.playback('gameOverSound', this.sounds.gameOverSound);
 
-            this.state.backgroundMusic.pause();
-	    this.stopPlayback('attackSound');
-	    this.playback('gameOverSound', this.sounds.gameOverSound);
+            setTimeout(() => {
+                window.setScore(this.state.score);
+                window.setAppView('setScore');
+            }, 1000)
 
-            this.cancelFrame(this.frame.count - 1);
+            this.setState({ current: 'over' })
         }
 
         // draw the next screen
@@ -435,11 +441,6 @@ class Game {
         // button
         if ( target.id === 'button') {
             this.setState({ current: 'play' });
-
-            // if defaulting to have sound on by default
-            // double mute() to warmup iphone audio here
-            this.mute();
-            this.mute();
         }
 
     }
@@ -459,6 +460,7 @@ class Game {
         if (this.state.current === 'over') { this.load(); }
         if (this.state.current != 'play' || this.state.paused) { return; }
 
+        if (!this.canvas) { return; }
         let tap = getCursorPosition(this.canvas, touch);
 
         // send tap to moles
@@ -475,7 +477,7 @@ class Game {
 
     handleResize() {
 
-        document.location.reload();
+// document.location.reload();
     }
 
     // game helpers
@@ -509,7 +511,7 @@ class Game {
 
     // mute game
     mute() {
-        let key = this.prefix.concat('muted');
+        let key = `${this.prefix}-muted`;
         localStorage.setItem(
             key,
             localStorage.getItem(key) === 'true' ? 'false' : 'true'
@@ -531,10 +533,13 @@ class Game {
 
     // reset game
     reset() {
-        document.location.reload();
+        // document.location.reload();
     }
 
     playback(key, audioBuffer, options = {}) {
+        // ignore when muted
+        if (this.state.muted) { return; }
+
         // add to playlist
         let id = Math.random().toString(16).slice(2);
         this.playlist.push({
@@ -553,6 +558,7 @@ class Game {
                     .filter(s => s.id != id);
             })
         });
+        console.log('play', key, this.playlist);
     }
 
     stopPlayback(key) {
@@ -562,8 +568,14 @@ class Game {
             if (targetBuffer) {
                 s.playback.pause();
             }
-            return targetBuffer;
+            return !targetBuffer;
         })
+    }
+
+    // stop playlist
+    stopPlaylist() {
+      this.playlist
+      .forEach(s => this.stopPlayback(s.key))
     }
 
     // update game state
@@ -593,6 +605,26 @@ class Game {
     // see game/helpers/animationframe.js for more information
     cancelFrame() {
         cancelAnimationFrame(this.frame.count);
+    }
+
+    // destroy
+    destroy() {
+      // stop game loop and music
+      this.setState({ current: 'stop' })
+      this.stopPlaylist();
+
+      // cleanup event listeners
+      document.removeEventListener('keydown', this.handleKeyboardInput);
+      document.removeEventListener('keyup', this.handleKeyboardInput);
+      document.removeEventListener('touchstart', this.handleTap);
+      document.removeEventListener('mousedown', this.handleTap);
+      this.overlay.root.removeEventListener('click', this.handleClicks);
+      window.removeEventListener('resize', this.handleResize);
+      window.removeEventListener('orientationchange', this.handleResize);
+
+      // cleanup nodes
+      delete this.overlay;
+      delete this.canvas;
     }
 }
 
